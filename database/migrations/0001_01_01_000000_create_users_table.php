@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\Gender;
+use App\Enums\Role;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,11 +15,18 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('nama_lengkap');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('nomor_handphone')->unique();
+            $table->text('alamat')->nullable();
             $table->string('password');
+            $table->enum('role', [Role::ADMIN->value, Role::PEGAWAI->value, Role::PEGAWAI_KEUANGAN->value])->default(Role::PEGAWAI->value);
+            $table->enum('gender', [Gender::LAKI_LAKI->value, Gender::PEREMPUAN->value])->default(Gender::LAKI_LAKI->value);
+            $table->string('foto_profile_path')->nullable();
+            $table->string('tempat_lahir')->nullable();
+            $table->date('tanggal_lahir')->nullable();
             $table->rememberToken();
+            $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
         });
 
