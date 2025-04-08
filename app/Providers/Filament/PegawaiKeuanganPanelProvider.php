@@ -28,6 +28,7 @@ class PegawaiKeuanganPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->login()
             ->discoverResources(in: app_path('Filament/PegawaiKeuangan/Resources'), for: 'App\\Filament\\PegawaiKeuangan\\Resources')
             ->discoverPages(in: app_path('Filament/PegawaiKeuangan/Pages'), for: 'App\\Filament\\PegawaiKeuangan\\Pages')
             ->pages([
