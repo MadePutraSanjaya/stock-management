@@ -48,7 +48,7 @@ class ItemWithdrawalResource extends Resource
                 Tables\Columns\TextColumn::make('item.name')->label('Item'),
                 Tables\Columns\TextColumn::make('quantity'),
                 Tables\Columns\TextColumn::make('withdrawal_date')->date(),
-                Tables\Columns\TextColumn::make('user.name')->label('Taken By'),
+                Tables\Columns\TextColumn::make('user.nama_lengkap')->label('Taken By'),
             ])
             ->filters([
                 //
@@ -63,13 +63,28 @@ class ItemWithdrawalResource extends Resource
             ]);
     }
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    public static function afterCreate($record): void
     {
-        $data['taken_by'] = Auth::id();
-        return $data;
+        $item = $record->item;
+        $item->decrement('stock', $record->quantity);
     }
 
-    
+    public static function afterUpdate($record): void
+    {
+        $original = $record->getOriginal();
+
+        $diff = $record->quantity - $original['quantity'];
+
+        if ($diff !== 0) {
+            $record->item->decrement('stock', $diff);
+        }
+    }
+
+    public static function afterDelete($record): void
+    {
+        $record->item->increment('stock', $record->quantity);
+    }
+
     public static function mutateFormDataBeforeSave(array $data): array
     {
         if (!isset($data['taken_by'])) {

@@ -44,7 +44,7 @@ class ItemEntryResource extends Resource
                 TextColumn::make('quantity'),
                 TextColumn::make('price')->money('IDR'),
                 TextColumn::make('entry_date')->date(),
-                TextColumn::make('creator.name')->label('Created By'),
+                TextColumn::make('user.nama_lengkap')->label('Created By'),
             ])
             ->filters([
                 //
@@ -57,6 +57,28 @@ class ItemEntryResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function afterCreate($record): void
+    {
+        $item = $record->item;
+        $item->increment('stock', $record->quantity);
+    }
+
+    public static function afterUpdate($record): void
+    {
+        $original = $record->getOriginal();
+
+        $diff = $record->quantity - $original['quantity'];
+
+        if ($diff !== 0) {
+            $record->item->increment('stock', $diff);
+        }
+    }
+
+    public static function afterDelete($record): void
+    {
+        $record->item->decrement('stock', $record->quantity);
     }
 
     public static function getRelations(): array

@@ -22,6 +22,24 @@ class ItemEntry extends Model
         'entry_date' => 'date',
     ];
 
+    protected static function booted()
+    {
+        static::created(function ($entry) {
+            $entry->item->increment('stock', $entry->quantity);
+        });
+    
+        static::updated(function ($entry) {
+            $originalQuantity = $entry->getOriginal('quantity');
+            $difference = $entry->quantity - $originalQuantity;
+            $entry->item->increment('stock', $difference);
+        });
+    
+        static::deleted(function ($entry) {
+            $entry->item->decrement('stock', $entry->quantity);
+        });
+    }
+    
+
     public function item()
     {
         return $this->belongsTo(Item::class);
