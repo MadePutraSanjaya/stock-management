@@ -13,7 +13,6 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->integer('stock')->default(0);
-            $table->decimal('price', 12, 2)->default(0);
             $table->string('unit')->nullable(); 
             $table->timestamps();
         });

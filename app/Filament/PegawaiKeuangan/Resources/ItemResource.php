@@ -28,7 +28,7 @@ class ItemResource extends Resource
             TextInput::make('name')->required(),
             Textarea::make('description'),
             TextInput::make('stock')->numeric()->default(0)->required(),
-            TextInput::make('price')->numeric()->required(),
+         
             TextInput::make('unit'),
         ]);
     }
@@ -39,7 +39,7 @@ class ItemResource extends Resource
             ->columns([
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('stock'),
-                TextColumn::make('price')->money('IDR'),
+              
                 TextColumn::make('unit'),
             ])
             ->filters([

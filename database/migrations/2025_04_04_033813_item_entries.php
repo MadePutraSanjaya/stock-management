@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('item_id')->constrained()->onDelete('cascade');
             $table->integer('quantity');
-            $table->decimal('price', 12, 2);
             $table->date('entry_date');
             $table->foreignId('created_by')->constrained('users');
             $table->text('notes')->nullable();

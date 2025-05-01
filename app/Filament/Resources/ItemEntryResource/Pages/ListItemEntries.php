@@ -4,7 +4,9 @@ namespace App\Filament\Resources\ItemEntryResource\Pages;
 
 use App\Filament\Resources\ItemEntryResource;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Colors\Color;
 
 class ListItemEntries extends ListRecords
 {
@@ -13,6 +15,9 @@ class ListItemEntries extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('export')
+            ->color(Color::Green)
+            ->url(route('admin.download.item-entries')),
             Actions\CreateAction::make(),
         ];
     }

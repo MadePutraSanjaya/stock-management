@@ -17,6 +17,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class ItemEntryResource extends Resource
 {
@@ -29,9 +30,8 @@ class ItemEntryResource extends Resource
         return $form->schema([
             Select::make('item_id')->relationship('item', 'name')->required(),
             TextInput::make('quantity')->numeric()->required(),
-            TextInput::make('price')->numeric()->required(),
+         
             DatePicker::make('entry_date')->required(),
-            Select::make('created_by')->relationship('user', 'nama_lengkap')->required(),
             Textarea::make('notes'),
         ]);
     }
@@ -42,13 +42,23 @@ class ItemEntryResource extends Resource
             ->columns([
                 TextColumn::make('item.name'),
                 TextColumn::make('quantity'),
-                TextColumn::make('price')->money('IDR'),
+              
                 TextColumn::make('entry_date')->date(),
                 TextColumn::make('user.nama_lengkap')->label('Created By'),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')->label('Created From'),
+                        Forms\Components\DatePicker::make('created_until')->label('Created Until'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when($data['created_from'], fn($q) => $q->whereDate('created_at', '>=', $data['created_from']))
+                            ->when($data['created_until'], fn($q) => $q->whereDate('created_at', '<=', $data['created_until']));
+                    }),
             ])
+
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
@@ -79,6 +89,14 @@ class ItemEntryResource extends Resource
     public static function afterDelete($record): void
     {
         $record->item->decrement('stock', $record->quantity);
+    }
+
+    public static function mutateFormDataBeforeSave(array $data): array
+    {
+        if (!isset($data['taken_by'])) {
+            $data['taken_by'] = Auth::id();
+        }
+        return $data;
     }
 
     public static function getRelations(): array

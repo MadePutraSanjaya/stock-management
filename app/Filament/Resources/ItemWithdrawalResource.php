@@ -51,7 +51,16 @@ class ItemWithdrawalResource extends Resource
                 Tables\Columns\TextColumn::make('user.nama_lengkap')->label('Taken By'),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('created_at')
+                ->form([
+                    Forms\Components\DatePicker::make('created_from')->label('Created From'),
+                    Forms\Components\DatePicker::make('created_until')->label('Created Until'),
+                ])
+                ->query(function (Builder $query, array $data) {
+                    return $query
+                        ->when($data['created_from'], fn($q) => $q->whereDate('created_at', '>=', $data['created_from']))
+                        ->when($data['created_until'], fn($q) => $q->whereDate('created_at', '<=', $data['created_until']));
+                }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -92,8 +101,6 @@ class ItemWithdrawalResource extends Resource
         }
         return $data;
     }
-
-
 
     public static function getRelations(): array
     {

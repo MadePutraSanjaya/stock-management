@@ -31,9 +31,5 @@ class ItemRequest extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
-
-    public function details()
-    {
-        return $this->hasMany(ItemRequestDetail::class);
-    }
+    
 }

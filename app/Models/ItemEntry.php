@@ -12,7 +12,6 @@ class ItemEntry extends Model
     protected $fillable = [
         'item_id',
         'quantity',
-        'price',
         'entry_date',
         'created_by',
         'notes',

@@ -13,7 +13,6 @@ class Item extends Model
         'name',
         'description',
         'stock',
-        'price',
         'unit',
     ];
     
@@ -26,10 +25,5 @@ class Item extends Model
     public function withdrawals()
     {
         return $this->hasMany(ItemWithdrawal::class);
-    }
-
-    public function requestDetails()
-    {
-        return $this->hasMany(ItemRequestDetail::class);
     }
 }
