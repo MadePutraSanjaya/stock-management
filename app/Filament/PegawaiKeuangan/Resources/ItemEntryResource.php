@@ -29,6 +29,7 @@ class ItemEntryResource extends Resource
         return $form->schema([
             Select::make('item_id')->relationship('item', 'name')->required(),
             TextInput::make('quantity')->numeric()->required(),
+            TextInput::make('supplier')->required(),
          
             DatePicker::make('entry_date')->required(),
             Textarea::make('notes'),
@@ -41,6 +42,7 @@ class ItemEntryResource extends Resource
             ->columns([
                 TextColumn::make('item.name'),
                 TextColumn::make('quantity'),
+                TextColumn::make('supplier'),
               
                 TextColumn::make('entry_date')->date(),
                 TextColumn::make('user.nama_lengkap')->label('Created By'),

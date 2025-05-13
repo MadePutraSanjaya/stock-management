@@ -14,6 +14,7 @@ class ItemEntry extends Model
         'quantity',
         'entry_date',
         'created_by',
+        'supplier',
         'notes',
     ];
 

@@ -10,6 +10,7 @@ class ItemWithdrawal extends Model
         'item_id',
         'quantity',
         'withdrawal_date',
+        'withdrawal_by',
         'purpose',
         'taken_by',
     ];

@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('item_id')->constrained()->onDelete('cascade');
             $table->integer('quantity');
             $table->date('withdrawal_date');
+            $table->string('withdrawal_by');
             $table->foreignId('taken_by')->constrained('users');
             $table->text('purpose')->nullable();
             $table->timestamps();

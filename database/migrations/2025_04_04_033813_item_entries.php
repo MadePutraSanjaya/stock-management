@@ -15,6 +15,7 @@ return new class extends Migration
             $table->date('entry_date');
             $table->foreignId('created_by')->constrained('users');
             $table->text('notes')->nullable();
+            $table->string('supplier');
             $table->timestamps();
         });
     }

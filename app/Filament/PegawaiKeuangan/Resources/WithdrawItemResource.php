@@ -28,6 +28,8 @@ class WithdrawItemResource extends Resource
                 Forms\Components\Select::make('item_id')
                     ->relationship('item', 'name')
                     ->required(),
+                Forms\Components\TextInput::make('withdrawal_by')
+                    ->required(),
                 Forms\Components\TextInput::make('quantity')
                     ->numeric()
                     ->required(),
@@ -44,19 +46,20 @@ class WithdrawItemResource extends Resource
                 Tables\Columns\TextColumn::make('item.name')->label('Item'),
                 Tables\Columns\TextColumn::make('quantity'),
                 Tables\Columns\TextColumn::make('withdrawal_date')->date(),
+                Tables\Columns\TextColumn::make('withdrawal_by'),
                 Tables\Columns\TextColumn::make('user.nama_lengkap')->label('Taken By'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('created_at')
-                ->form([
-                    Forms\Components\DatePicker::make('created_from')->label('Created From'),
-                    Forms\Components\DatePicker::make('created_until')->label('Created Until'),
-                ])
-                ->query(function (Builder $query, array $data) {
-                    return $query
-                        ->when($data['created_from'], fn($q) => $q->whereDate('created_at', '>=', $data['created_from']))
-                        ->when($data['created_until'], fn($q) => $q->whereDate('created_at', '<=', $data['created_until']));
-                }),
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')->label('Created From'),
+                        Forms\Components\DatePicker::make('created_until')->label('Created Until'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when($data['created_from'], fn($q) => $q->whereDate('created_at', '>=', $data['created_from']))
+                            ->when($data['created_until'], fn($q) => $q->whereDate('created_at', '<=', $data['created_until']));
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
