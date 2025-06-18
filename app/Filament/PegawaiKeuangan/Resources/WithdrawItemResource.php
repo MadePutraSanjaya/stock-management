@@ -5,21 +5,22 @@ namespace App\Filament\PegawaiKeuangan\Resources;
 use App\Filament\PegawaiKeuangan\Resources\WithdrawItemResource\Pages;
 use App\Filament\PegawaiKeuangan\Resources\WithdrawItemResource\RelationManagers;
 use App\Models\ItemWithdrawal;
-use App\Models\WithdrawItem;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class WithdrawItemResource extends Resource
 {
     protected static ?string $model = ItemWithdrawal::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Pengambilan Barang';
+    protected static ?string $label = 'Pengambilan';
+    protected static ?string $pluralLabel = 'Pengambilan Barang';
 
     public static function form(Form $form): Form
     {
@@ -27,15 +28,20 @@ class WithdrawItemResource extends Resource
             ->schema([
                 Forms\Components\Select::make('item_id')
                     ->relationship('item', 'name')
+                    ->label('Barang')
                     ->required(),
                 Forms\Components\TextInput::make('withdrawal_by')
+                    ->label('Diambil Oleh')
                     ->required(),
                 Forms\Components\TextInput::make('quantity')
+                    ->label('Jumlah')
                     ->numeric()
                     ->required(),
                 Forms\Components\DatePicker::make('withdrawal_date')
+                    ->label('Tanggal Pengambilan')
                     ->required(),
-                Forms\Components\Textarea::make('purpose'),
+                Forms\Components\Textarea::make('purpose')
+                    ->label('Keperluan'),
             ]);
     }
 
@@ -43,30 +49,21 @@ class WithdrawItemResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('item.name')->label('Item'),
-                Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('withdrawal_date')->date(),
-                Tables\Columns\TextColumn::make('withdrawal_by'),
-                Tables\Columns\TextColumn::make('user.nama_lengkap')->label('Taken By'),
+                Tables\Columns\TextColumn::make('item.name')->label('Barang'),
+                Tables\Columns\TextColumn::make('quantity')->label('Jumlah'),
+                Tables\Columns\TextColumn::make('withdrawal_date')->date()->label('Tanggal Pengambilan'),
+                Tables\Columns\TextColumn::make('withdrawal_by')->label('Diambil Oleh'),
+                Tables\Columns\TextColumn::make('user.nama_lengkap')->label('Dicatat Oleh'),
             ])
             ->filters([
-                Tables\Filters\Filter::make('created_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('created_from')->label('Created From'),
-                        Forms\Components\DatePicker::make('created_until')->label('Created Until'),
-                    ])
-                    ->query(function (Builder $query, array $data) {
-                        return $query
-                            ->when($data['created_from'], fn($q) => $q->whereDate('created_at', '>=', $data['created_from']))
-                            ->when($data['created_until'], fn($q) => $q->whereDate('created_at', '<=', $data['created_until']));
-                    }),
+                DateRangeFilter::make('created_at')->label('Tanggal Dibuat'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Edit'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
                 ]),
             ]);
     }
@@ -101,13 +98,9 @@ class WithdrawItemResource extends Resource
         return $data;
     }
 
-
-
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

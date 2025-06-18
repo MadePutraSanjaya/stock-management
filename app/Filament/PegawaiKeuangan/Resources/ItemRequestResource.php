@@ -2,41 +2,49 @@
 
 namespace App\Filament\PegawaiKeuangan\Resources;
 
-use App\Enums\Role;
 use App\Enums\Status;
 use App\Filament\Resources\ItemRequestResource\Pages;
-use App\Filament\Resources\ItemRequestResource\RelationManagers;
 use App\Models\ItemRequest;
-use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Hidden;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\Auth;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class ItemRequestResource extends Resource
 {
     protected static ?string $model = ItemRequest::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
+    protected static ?string $navigationLabel = 'Permintaan Barang';
+    protected static ?string $label = 'Permintaan Barang';
+    protected static ?string $pluralLabel = 'Daftar Permintaan Barang';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Hidden::make('user_id')
-                    ->default(fn() => Auth::id()),
+                Hidden::make('user_id')->default(fn () => Auth::id()),
 
-                TextInput::make('title')->required(),
-                Textarea::make('description')->required(),
+                TextInput::make('title')
+                    ->label('Judul Permintaan')
+                    ->required(),
 
+                Textarea::make('description')
+                    ->label('Deskripsi Permintaan')
+                    ->required(),
+
+                TextInput::make('quantity')
+                    ->label('Jumlah Barang')
+                    ->numeric()
+                    ->required(),
             ]);
     }
 
@@ -44,30 +52,32 @@ class ItemRequestResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('title'),
-                TextColumn::make('created_at'),
-                TextColumn::make('user.role')->label('Created By'),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('title')->label('Judul'),
+                TextColumn::make('quantity')->label('Jumlah'),
+                TextColumn::make('created_at')->label('Tanggal Permintaan')->date('d-m-Y'),
+                TextColumn::make('user.nama_lengkap')->label('Dibuat Oleh'),
+                TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         Status::APPROVED->value => 'success',
-                        Status::REJECTED->value => 'warning',
+                        Status::REJECTED->value => 'danger',
                         default => 'warning',
                     }),
             ])
             ->filters([
-                //
+                DateRangeFilter::make('created_at')->label('Filter Tanggal Dibuat'),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\EditAction::make()->label('Ubah'),
 
                     Tables\Actions\Action::make('approve')
-                        ->label('Approve')
+                        ->label('Setujui')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->requiresConfirmation()
-                        ->visible(fn($record) => $record->status === Status::PENDING->value)
+                        ->visible(fn ($record) => $record->status === Status::PENDING->value)
                         ->action(function ($record) {
                             $record->update([
                                 'status' => Status::APPROVED->value,
@@ -77,11 +87,11 @@ class ItemRequestResource extends Resource
                         }),
 
                     Tables\Actions\Action::make('reject')
-                        ->label('Reject')
+                        ->label('Tolak')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->visible(fn($record) => $record->status === Status::PENDING->value)
+                        ->visible(fn ($record) => $record->status === Status::PENDING->value)
                         ->action(function ($record) {
                             $record->update([
                                 'status' => Status::REJECTED->value,
@@ -91,10 +101,9 @@ class ItemRequestResource extends Resource
                         }),
                 ]),
             ])
-
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
                 ]),
             ]);
     }
@@ -111,17 +120,15 @@ class ItemRequestResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListItemRequests::route('/'),
-            'create' => Pages\CreateItemRequest::route('/create'),
-            'edit' => Pages\EditItemRequest::route('/{record}/edit'),
+            'create' => Pages\CreateItemRequest::route('/buat'),
+            'edit' => Pages\EditItemRequest::route('/{record}/ubah'),
         ];
     }
 }

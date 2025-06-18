@@ -4,9 +4,9 @@ namespace App\Filament\Resources\ItemEntryResource\Pages;
 
 use App\Filament\Resources\ItemEntryResource;
 use Filament\Actions;
+use Filament\Support\Colors\Color;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Support\Colors\Color;
 
 class ListItemEntries extends ListRecords
 {

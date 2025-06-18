@@ -13,6 +13,7 @@ class ItemRequest extends Model
         'user_id',
         'title',
         'description',
+        'quantity',
         'status',
         'approved_by',
         'approved_at',

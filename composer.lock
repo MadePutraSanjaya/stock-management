@@ -3522,16 +3522,16 @@
         },
         {
             "name": "malzariey/filament-daterangepicker-filter",
-            "version": "3.4.0",
+            "version": "3.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/malzariey/filament-daterangepicker-filter.git",
-                "reference": "899ec35d63a1727c2195ed46ccc0523b01d57a67"
+                "reference": "4dedf6b4c1a0739e7e86654a858f73c98999849b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/malzariey/filament-daterangepicker-filter/zipball/899ec35d63a1727c2195ed46ccc0523b01d57a67",
-                "reference": "899ec35d63a1727c2195ed46ccc0523b01d57a67",
+                "url": "https://api.github.com/repos/malzariey/filament-daterangepicker-filter/zipball/4dedf6b4c1a0739e7e86654a858f73c98999849b",
+                "reference": "4dedf6b4c1a0739e7e86654a858f73c98999849b",
                 "shasum": ""
             },
             "require": {
@@ -3576,7 +3576,7 @@
             ],
             "support": {
                 "issues": "https://github.com/malzariey/filament-daterangepicker-filter/issues",
-                "source": "https://github.com/malzariey/filament-daterangepicker-filter/tree/3.4.0"
+                "source": "https://github.com/malzariey/filament-daterangepicker-filter/tree/3.4.2"
             },
             "funding": [
                 {
@@ -3584,7 +3584,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-05-10T09:50:50+00:00"
+            "time": "2025-05-29T06:13:47+00:00"
         },
         {
             "name": "markbaker/complex",

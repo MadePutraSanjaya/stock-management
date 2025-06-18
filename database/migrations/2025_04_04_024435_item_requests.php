@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
+            $table->text('quantity')->nullable();
             $table->enum('status', [Status::PENDING->value, Status::APPROVED->value, Status::REJECTED->value])->default(Status::PENDING->value);
             $table->foreignId('approved_by')->nullable()->constrained('users');
             $table->timestamp('approved_at')->nullable();

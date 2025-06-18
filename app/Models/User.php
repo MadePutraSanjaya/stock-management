@@ -30,6 +30,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'email',
         'nomor_handphone',
         'role',
+        'nip',
         'password',
         'alamat',
         'gender',
@@ -80,5 +81,18 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function getFilamentName(): string
     {
         return $this->nama_lengkap ?? 'User';
+    }
+
+    public function getAuthIdentifierName()
+    {
+        return 'nip';
+    }
+
+    /**
+     * WAJIB: Untuk mendapatkan identifier value
+     */
+    public function getAuthIdentifier()
+    {
+        return $this->getAttribute($this->getAuthIdentifierName());
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ItemWithdrawalResource\Pages;
-use App\Filament\Resources\ItemWithdrawalResource\RelationManagers;
 use App\Models\ItemWithdrawal;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -15,31 +14,42 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class ItemWithdrawalResource extends Resource
 {
     protected static ?string $model = ItemWithdrawal::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $label = 'Pengambilan Barang';
+    protected static ?string $pluralLabel = 'Daftar Pengambilan Barang';
+    protected static ?string $navigationLabel = 'Pengambilan Barang';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('item_id')
+                Select::make('item_id')
                     ->relationship('item', 'name')
-                    ->required(),
-                Forms\Components\TextInput::make('withdrawal_by')
-                    ->required(),
-                Forms\Components\TextInput::make('quantity')
+                    ->required()
+                    ->label('Nama Barang'),
+
+                TextInput::make('withdrawal_by')
+                    ->required()
+                    ->label('Diambil Oleh'),
+
+                TextInput::make('quantity')
                     ->numeric()
-                    ->required(),
-                Forms\Components\DatePicker::make('withdrawal_date')
-                    ->required(),
-                Forms\Components\Textarea::make('purpose'),
+                    ->required()
+                    ->label('Jumlah'),
+
+                DatePicker::make('withdrawal_date')
+                    ->required()
+                    ->label('Tanggal Pengambilan'),
+
+                Textarea::make('purpose')
+                    ->label('Tujuan Pengambilan'),
             ]);
     }
 
@@ -47,30 +57,21 @@ class ItemWithdrawalResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('item.name')->label('Item'),
-                Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('withdrawal_by'),
-                Tables\Columns\TextColumn::make('withdrawal_date')->date(),
-                Tables\Columns\TextColumn::make('user.nama_lengkap')->label('Taken By'),
+                TextColumn::make('item.name')->label('Nama Barang'),
+                TextColumn::make('quantity')->label('Jumlah'),
+                TextColumn::make('withdrawal_by')->label('Diambil Oleh'),
+                TextColumn::make('withdrawal_date')->label('Tanggal')->date('d-m-Y'),
+                TextColumn::make('user.nama_lengkap')->label('Dicatat Oleh'),
             ])
             ->filters([
-                Tables\Filters\Filter::make('created_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('created_from')->label('Created From'),
-                        Forms\Components\DatePicker::make('created_until')->label('Created Until'),
-                    ])
-                    ->query(function (Builder $query, array $data) {
-                        return $query
-                            ->when($data['created_from'], fn($q) => $q->whereDate('created_at', '>=', $data['created_from']))
-                            ->when($data['created_until'], fn($q) => $q->whereDate('created_at', '<=', $data['created_until']));
-                    }),
+                DateRangeFilter::make('created_at')->label('Filter Tanggal Dibuat'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Ubah'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
                 ]),
             ]);
     }
@@ -84,7 +85,6 @@ class ItemWithdrawalResource extends Resource
     public static function afterUpdate($record): void
     {
         $original = $record->getOriginal();
-
         $diff = $record->quantity - $original['quantity'];
 
         if ($diff !== 0) {
@@ -107,17 +107,15 @@ class ItemWithdrawalResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListItemWithdrawals::route('/'),
-            'create' => Pages\CreateItemWithdrawal::route('/create'),
-            'edit' => Pages\EditItemWithdrawal::route('/{record}/edit'),
+            'create' => Pages\CreateItemWithdrawal::route('/buat'),
+            'edit' => Pages\EditItemWithdrawal::route('/{record}/ubah'),
         ];
     }
 }

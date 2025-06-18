@@ -3,33 +3,44 @@
 namespace App\Filament\PegawaiKeuangan\Resources;
 
 use App\Filament\PegawaiKeuangan\Resources\ItemResource\Pages;
-use App\Filament\PegawaiKeuangan\Resources\ItemResource\RelationManagers;
 use App\Models\Item;
 use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\TextColumn;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class ItemResource extends Resource
 {
     protected static ?string $model = Item::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static ?string $navigationLabel = 'Data Barang';
+    protected static ?string $label = 'Barang';
+    protected static ?string $pluralLabel = 'Daftar Barang';
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->required(),
-            Textarea::make('description'),
-            TextInput::make('stock')->numeric()->default(0)->required(),
-         
-            TextInput::make('unit'),
+            TextInput::make('name')
+                ->label('Nama Barang')
+                ->required(),
+
+            Textarea::make('description')
+                ->label('Deskripsi'),
+
+            TextInput::make('stock')
+                ->label('Stok')
+                ->numeric()
+                ->default(0)
+                ->required(),
+
+            TextInput::make('unit')
+                ->label('Satuan'),
         ]);
     }
 
@@ -37,38 +48,34 @@ class ItemResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable(),
-                TextColumn::make('stock'),
-              
-                TextColumn::make('unit'),
+                TextColumn::make('name')->label('Nama Barang')->searchable(),
+                TextColumn::make('stock')->label('Stok'),
+                TextColumn::make('unit')->label('Satuan'),
             ])
             ->filters([
-                //
+                DateRangeFilter::make('created_at')->label('Filter Tanggal Dibuat'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Ubah'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
                 ]),
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListItems::route('/'),
-            'create' => Pages\CreateItem::route('/create'),
-            'edit' => Pages\EditItem::route('/{record}/edit'),
+            'create' => Pages\CreateItem::route('/buat'),
+            'edit' => Pages\EditItem::route('/{record}/ubah'),
         ];
     }
 }
-

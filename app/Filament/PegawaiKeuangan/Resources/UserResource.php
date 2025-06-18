@@ -1,26 +1,27 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\PegawaiKeuangan\Resources;
 
 use App\Enums\Gender;
 use App\Enums\Role;
-use App\Filament\Resources\UserResource\Pages;
+use App\Filament\PegawaiKeuangan\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
-    protected static ?string $navigationLabel = 'Pengguna';
-    protected static ?string $label = 'Pengguna';
-    protected static ?string $pluralLabel = 'Daftar Pengguna';
+    protected static ?string $navigationIcon = 'heroicon-o-user';
+    protected static ?string $navigationLabel = 'Profil Saya';
+    protected static ?string $label = 'Profil';
+    protected static ?string $pluralLabel = 'Pengguna';
 
     public static function form(Form $form): Form
     {
@@ -39,7 +40,7 @@ class UserResource extends Resource
                     ->maxLength(255),
 
                 Forms\Components\TextInput::make('nomor_handphone')
-                    ->label('Nomor HP')
+                    ->label('Nomor Handphone')
                     ->tel()
                     ->required()
                     ->unique(ignoreRecord: true)
@@ -59,7 +60,8 @@ class UserResource extends Resource
                         Role::PEGAWAI->value => 'Pegawai',
                         Role::PEGAWAI_KEUANGAN->value => 'Pegawai Keuangan',
                     ])
-                    ->required(),
+                    ->required()
+                    ->visible(fn() => Auth::user()?->role === Role::ADMIN->value),
 
                 Forms\Components\Textarea::make('alamat')
                     ->label('Alamat')
@@ -88,11 +90,11 @@ class UserResource extends Resource
                     ->directory('profile-photos')
                     ->maxSize(1024),
 
-                Forms\Components\Section::make('Kata Sandi')
+                Forms\Components\Section::make('Password')
                     ->schema([
                         Forms\Components\TextInput::make('password')
+                            ->label('Kata Sandi')
                             ->password()
-                            ->label('Password')
                             ->dehydrateStateUsing(fn($state) => Hash::make($state))
                             ->dehydrated(fn($state) => filled($state))
                             ->required(fn(string $context): bool => $context === 'create')
@@ -107,6 +109,7 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn($query) => $query->where('nip', Auth::id()))
             ->columns([
                 Tables\Columns\TextColumn::make('nama_lengkap')->label('Nama Lengkap'),
                 Tables\Columns\TextColumn::make('email')->label('Email'),
@@ -115,16 +118,13 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('alamat')->label('Alamat'),
                 Tables\Columns\TextColumn::make('gender')->label('Jenis Kelamin'),
                 Tables\Columns\TextColumn::make('tempat_lahir')->label('Tempat Lahir'),
-                Tables\Columns\TextColumn::make('tanggal_lahir')->label('Tanggal Lahir')->date('d-m-Y'),
+                Tables\Columns\TextColumn::make('tanggal_lahir')->label('Tanggal Lahir'),
             ])
+            ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make()->label('Ubah'),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array
@@ -132,11 +132,20 @@ class UserResource extends Resource
         return [];
     }
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/buat'),
             'edit' => Pages\EditUser::route('/{record}/ubah'),
         ];
     }

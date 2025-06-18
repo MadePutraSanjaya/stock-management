@@ -3,21 +3,18 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ItemEntryResource\Pages;
-use App\Filament\Resources\ItemEntryResource\RelationManagers;
 use App\Models\ItemEntry;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class ItemEntryResource extends Resource
 {
@@ -25,15 +22,33 @@ class ItemEntryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationLabel = 'Barang Masuk';
+    protected static ?string $pluralLabel = 'Barang Masuk';
+    protected static ?string $label = 'Barang Masuk';
+
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([
-            Select::make('item_id')->relationship('item', 'name')->required(),
-            TextInput::make('quantity')->numeric()->required(),
-            TextInput::make('supplier')->required(),
-         
-            DatePicker::make('entry_date')->required(),
-            Textarea::make('notes'),
+            Select::make('item_id')
+                ->label('Nama Barang')
+                ->relationship('item', 'name')
+                ->required(),
+
+            TextInput::make('quantity')
+                ->label('Jumlah')
+                ->numeric()
+                ->required(),
+
+            TextInput::make('supplier')
+                ->label('Pemasok')
+                ->required(),
+
+            DatePicker::make('entry_date')
+                ->label('Tanggal Masuk')
+                ->required(),
+
+            Textarea::make('notes')
+                ->label('Catatan'),
         ]);
     }
 
@@ -41,31 +56,21 @@ class ItemEntryResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('item.name'),
-                TextColumn::make('quantity'),
-                TextColumn::make('supplier'),
-                TextColumn::make('entry_date')->date(),
-                TextColumn::make('user.nama_lengkap')->label('Created By'),
+                TextColumn::make('item.name')->label('Nama Barang'),
+                TextColumn::make('quantity')->label('Jumlah'),
+                TextColumn::make('supplier')->label('Pemasok'),
+                TextColumn::make('entry_date')->label('Tanggal Masuk')->date(),
+                TextColumn::make('user.nama_lengkap')->label('Dibuat Oleh'),
             ])
             ->filters([
-                Tables\Filters\Filter::make('created_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('created_from')->label('Created From'),
-                        Forms\Components\DatePicker::make('created_until')->label('Created Until'),
-                    ])
-                    ->query(function (Builder $query, array $data) {
-                        return $query
-                            ->when($data['created_from'], fn($q) => $q->whereDate('created_at', '>=', $data['created_from']))
-                            ->when($data['created_until'], fn($q) => $q->whereDate('created_at', '<=', $data['created_until']));
-                    }),
+                DateRangeFilter::make('created_at')->label('Tanggal Dibuat'),
             ])
-
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Ubah'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
                 ]),
             ]);
     }
@@ -79,7 +84,6 @@ class ItemEntryResource extends Resource
     public static function afterUpdate($record): void
     {
         $original = $record->getOriginal();
-
         $diff = $record->quantity - $original['quantity'];
 
         if ($diff !== 0) {
@@ -102,17 +106,15 @@ class ItemEntryResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListItemEntries::route('/'),
-            'create' => Pages\CreateItemEntry::route('/create'),
-            'edit' => Pages\EditItemEntry::route('/{record}/edit'),
+            'create' => Pages\CreateItemEntry::route('/buat'),
+            'edit' => Pages\EditItemEntry::route('/{record}/ubah'),
         ];
     }
 }
