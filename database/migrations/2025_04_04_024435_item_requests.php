@@ -15,12 +15,24 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->text('quantity')->nullable();
-            $table->enum('status', [Status::PENDING->value, Status::APPROVED->value, Status::REJECTED->value])->default(Status::PENDING->value);
-            $table->foreignId('approved_by')->nullable()->constrained('users');
+            $table->enum('status', [
+                Status::PENDING->value,
+                Status::APPROVED->value,
+                Status::REJECTED->value,
+            ])->default(Status::PENDING->value);
+
+            $table->integer('approved_by')->nullable(); // harus sama dengan users.nip
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
+
+            $table->foreign('approved_by')
+                ->references('nip')
+                ->on('users')
+                ->onDelete('set null'); // aman dan fleksibel
         });
     }
+
+
 
     public function down()
     {

@@ -78,6 +78,11 @@ class User extends Authenticatable implements FilamentUser, HasName
         return false;
     }
 
+    public function getRealId()
+    {
+        return $this->id; 
+    }
+
     public function getFilamentName(): string
     {
         return $this->nama_lengkap ?? 'User';

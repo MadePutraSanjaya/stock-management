@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Filament\Facades\Filament;
 
 class ItemWithdrawal extends Model
 {
@@ -15,8 +16,28 @@ class ItemWithdrawal extends Model
         'taken_by',
     ];
 
-    protected static function booted()
+    protected static function boot()
     {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->taken_by || !User::find($model->taken_by)) {
+                $currentUser = Filament::auth()->user();
+
+                if ($currentUser && isset($currentUser->nip)) {
+                    $userRecord = \App\Models\User::where('nip', $currentUser->nip)->first();
+
+                    if ($userRecord) {
+                        $model->taken_by = $userRecord->id;
+                    } else {
+                        throw new \Exception("User dengan NIP {$currentUser->nip} tidak ditemukan");
+                    }
+                } else {
+                    throw new \Exception("Tidak dapat menentukan user yang login");
+                }
+            }
+        });
+
         static::created(function ($withdrawal) {
             $withdrawal->item->decrement('stock', $withdrawal->quantity);
         });
@@ -24,8 +45,9 @@ class ItemWithdrawal extends Model
         static::updated(function ($withdrawal) {
             if ($withdrawal->wasChanged('quantity') || $withdrawal->wasChanged('item_id')) {
                 $originalItem = Item::find($withdrawal->getOriginal('item_id'));
-                $originalItem->increment('stock', $withdrawal->getOriginal('quantity'));
-
+                if ($originalItem) {
+                    $originalItem->increment('stock', $withdrawal->getOriginal('quantity'));
+                }
                 $withdrawal->item->decrement('stock', $withdrawal->quantity);
             }
         });

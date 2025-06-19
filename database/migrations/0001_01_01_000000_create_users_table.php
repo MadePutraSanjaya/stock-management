@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('nomor_handphone')->unique();
             $table->text('alamat')->nullable();
-            $table->integer('nip')->nullable();
+            $table->integer('nip')->nullable()->unique();
             $table->string('password');
             $table->enum('role', [Role::ADMIN->value, Role::PEGAWAI->value, Role::PEGAWAI_KEUANGAN->value])->default(Role::PEGAWAI->value);
             $table->enum('gender', [Gender::LAKI_LAKI->value, Gender::PEREMPUAN->value])->default(Gender::LAKI_LAKI->value);
