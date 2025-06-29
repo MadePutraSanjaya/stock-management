@@ -10,6 +10,7 @@ class ItemEntry extends ChartWidget
 {
     protected static ?string $heading = 'Item Entry Chart';
     protected int|string|array $columnSpan = 'full';
+    protected static ?int $sort = 3;
 
 
     protected function getData(): array

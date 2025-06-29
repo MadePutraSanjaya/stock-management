@@ -23,7 +23,6 @@ return new class extends Migration
             $table->string('password');
             $table->enum('role', [Role::ADMIN->value, Role::PEGAWAI->value, Role::PEGAWAI_KEUANGAN->value])->default(Role::PEGAWAI->value);
             $table->enum('gender', [Gender::LAKI_LAKI->value, Gender::PEREMPUAN->value])->default(Gender::LAKI_LAKI->value);
-            $table->string('foto_profile_path')->nullable();
             $table->string('tempat_lahir')->nullable();
             $table->date('tanggal_lahir')->nullable();
             $table->rememberToken();

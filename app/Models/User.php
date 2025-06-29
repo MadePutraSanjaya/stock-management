@@ -34,7 +34,6 @@ class User extends Authenticatable implements FilamentUser, HasName
         'password',
         'alamat',
         'gender',
-        'foto_profile_path',
         'tempat_lahir',
         'tanggal_lahir',
     ];

@@ -10,6 +10,7 @@ class ItemWithdrawal extends ChartWidget
 {
     protected static ?string $heading = 'Item Withdrawal Chart';
     protected int|string|array $columnSpan = 'full';
+    protected static ?int $sort = 2;
 
     protected function getData(): array
     {

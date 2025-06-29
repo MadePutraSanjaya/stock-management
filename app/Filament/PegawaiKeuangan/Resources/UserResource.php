@@ -84,12 +84,6 @@ class UserResource extends Resource
                     ->label('Tanggal Lahir')
                     ->maxDate(now()),
 
-                Forms\Components\FileUpload::make('foto_profile_path')
-                    ->label('Foto Profil')
-                    ->image()
-                    ->directory('profile-photos')
-                    ->maxSize(1024),
-
                 Forms\Components\Section::make('Password')
                     ->schema([
                         Forms\Components\TextInput::make('password')

@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
@@ -29,28 +30,32 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('nama_lengkap')
                     ->label('Nama Lengkap')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
 
                 Forms\Components\TextInput::make('email')
                     ->label('Email')
                     ->email()
                     ->required()
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
 
                 Forms\Components\TextInput::make('nomor_handphone')
                     ->label('Nomor HP')
                     ->tel()
                     ->required()
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
 
                 Forms\Components\TextInput::make('nip')
                     ->label('NIP')
                     ->tel()
                     ->required()
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
 
                 Forms\Components\Select::make('role')
                     ->label('Peran')
@@ -59,12 +64,14 @@ class UserResource extends Resource
                         Role::PEGAWAI->value => 'Pegawai',
                         Role::PEGAWAI_KEUANGAN->value => 'Pegawai Keuangan',
                     ])
-                    ->required(),
+                    ->required()
+                    ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
 
                 Forms\Components\Textarea::make('alamat')
                     ->label('Alamat')
                     ->maxLength(65535)
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
 
                 Forms\Components\Select::make('gender')
                     ->label('Jenis Kelamin')
@@ -72,21 +79,18 @@ class UserResource extends Resource
                         Gender::LAKI_LAKI->value => 'Laki-laki',
                         Gender::PEREMPUAN->value => 'Perempuan',
                     ])
-                    ->required(),
+                    ->required()
+                    ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
 
                 Forms\Components\TextInput::make('tempat_lahir')
                     ->label('Tempat Lahir')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
 
                 Forms\Components\DatePicker::make('tanggal_lahir')
                     ->label('Tanggal Lahir')
-                    ->maxDate(now()),
-
-                Forms\Components\FileUpload::make('foto_profile_path')
-                    ->label('Foto Profil')
-                    ->image()
-                    ->directory('profile-photos')
-                    ->maxSize(1024),
+                    ->maxDate(now())
+                    ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
 
                 Forms\Components\Section::make('Kata Sandi')
                     ->schema([
@@ -96,7 +100,8 @@ class UserResource extends Resource
                             ->dehydrateStateUsing(fn($state) => Hash::make($state))
                             ->dehydrated(fn($state) => filled($state))
                             ->required(fn(string $context): bool => $context === 'create')
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->disabled(fn($record) => self::isAdminEditingOtherUser($record)),
                     ])
                     ->collapsible()
                     ->visible(fn(string $context): bool => $context === 'create' || $context === 'edit'),
@@ -118,13 +123,54 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('tanggal_lahir')->label('Tanggal Lahir')->date('d-m-Y'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->label('Ubah'),
+                Tables\Actions\EditAction::make()
+                    ->label('Ubah')
+                    ->visible(fn($record) => self::canEditUser($record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Hapus Terpilih')
+                        ->visible(fn() => !self::isCurrentUserAdmin()),
                 ]),
             ]);
+    }
+
+    /**
+     * Cek apakah user yang login adalah admin dan sedang mengedit user lain
+     */
+    protected static function isAdminEditingOtherUser($record): bool
+    {
+        if (!$record) return false; // Jika tidak ada record (create mode), return false
+        
+        $currentUser = Auth::user();
+        
+        // Jika user yang login adalah admin dan record yang diedit bukan dirinya sendiri
+        return $currentUser->role === Role::ADMIN->value && $currentUser->id !== $record->id;
+    }
+
+    /**
+     * Cek apakah user yang login bisa mengedit user tertentu
+     */
+    protected static function canEditUser($record): bool
+    {
+        $currentUser = Auth::user();
+        
+        // Admin hanya bisa edit dirinya sendiri
+        if ($currentUser->role === Role::ADMIN->value) {
+            return $currentUser->id === $record->id;
+        }
+        
+        // Role lain bisa edit semua (sesuai permission yang sudah ada)
+        return true;
+    }
+
+    /**
+     * Cek apakah user yang login adalah admin
+     */
+    protected static function isCurrentUserAdmin(): bool
+    {
+        return Auth::user()->role === Role::ADMIN->value;
     }
 
     public static function getRelations(): array
